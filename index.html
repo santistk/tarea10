@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentry AI - Presentación Estratégica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blue: #1E3A8A;
+            --cyan: #06B6D4;
+            --green: #10B981;
+            --amber: #F59E0B;
+            --red: #EF4444;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --bg: #0B1120;
+            --slide-bg: #111827;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--light);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .presentation {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: var(--slide-bg);
+            opacity: 0;
+            transform: translateX(30px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+            z-index: 2;
+        }
+
+        .slide-inner {
+            max-width: 1100px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; line-height: 1.2; margin-bottom: 1rem; }
+        h1 { font-size: 3.5rem; background: linear-gradient(90deg, var(--cyan), var(--blue)); -webkit-background-clip: text; color: transparent; }
+        h2 { font-size: 2.5rem; color: var(--light); }
+        h3 { font-size: 1.5rem; color: var(--cyan); }
+        p, li { font-size: 1.1rem; line-height: 1.6; color: #D1D5DB; }
+        ul { list-style: none; padding-left: 0; }
+        li { margin-bottom: 0.8rem; }
+        strong { color: var(--light); }
+
+        .subtitle { font-size: 1.3rem; color: var(--cyan); margin-bottom: 2rem; font-weight: 400; }
+        .quote { font-style: italic; color: #9CA3AF; margin-top: 1.5rem; border-left: 3px solid var(--cyan); padding-left: 1rem; }
+        .highlight { background: linear-gradient(120deg, rgba(6,182,212,0.2), transparent); padding: 0.5rem 1rem; border-radius: 8px; display: inline-block; margin: 1rem 0; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem; }
+        .card { background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; text-align: left; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s; }
+        .card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.08); }
+        .card h4 { color: var(--cyan); margin-bottom: 0.5rem; font-size: 1.2rem; }
+        .card p, .card li { font-size: 0.95rem; }
+
+        .foda-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; width: 100%; }
+        .foda-box { padding: 1.5rem; border-radius: 10px; background: rgba(255,255,255,0.05); border-top: 4px solid transparent; }
+        .foda-box.f { border-color: var(--green); }
+        .foda-box.o { border-color: var(--cyan); }
+        .foda-box.d { border-color: var(--amber); }
+        .foda-box.a { border-color: var(--red); }
+        .foda-box h3 { margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .foda-box li { font-size: 0.9rem; margin-bottom: 0.4rem; }
+
+        .timeline { display: flex; justify-content: space-between; margin: 2rem 0; position: relative; }
+        .timeline::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.2); z-index: 0; }
+        .timeline-step { background: var(--bg); border: 2px solid var(--cyan); padding: 0.8rem; border-radius: 8px; z-index: 1; min-width: 120px; text-align: center; }
+        .timeline-step h4 { color: var(--cyan); font-size: 1rem; margin-bottom: 0.3rem; }
+
+        .canvas-flow { background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; margin-top: 1rem; text-align: left; }
+        .canvas-block { border-left: 3px solid var(--blue); padding-left: 1rem; margin-bottom: 1rem; }
+        .canvas-block h4 { color: var(--cyan); }
+
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(17,24,39,0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            z-index: 100;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        button {
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        button:hover { background: var(--cyan); transform: scale(1.05); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .progress-container { flex: 1; max-width: 400px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--blue)); width: 0%; transition: width 0.3s ease; }
+
+        .slide-counter { font-size: 0.9rem; color: #9CA3AF; min-width: 60px; text-align: center; }
+
+        /* Responsive tweaks */
+        @media (max-width: 900px) {
+            h1 { font-size: 2.2rem; }
+            h2 { font-size: 1.8rem; }
+            .grid-2, .grid-3, .foda-grid { grid-template-columns: 1fr; }
+            .slide { padding: 1.5rem; }
+        }
+
+        .hint { position: fixed; top: 1rem; right: 1rem; background: rgba(0,0,0,0.6); padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.8rem; opacity: 0.7; z-index: 90; }
+    </style>
+</head>
+<body>
+    <div class="hint">⌨️ Usa ← → o haz clic en los botones</div>
+
+    <div class="presentation" id="presentation">
+        <!-- SLIDE 1: PORTADA -->
+        <div class="slide active">
+            <div class="slide-inner">
+                <h1>SENTRY AI</h1>
+                <p class="subtitle">Ciberseguridad Inteligente y Preventiva para Guatemala</p>
+                <div style="margin-top: 2rem; color: #9CA3AF;">
+                    <p>Administración de Proyectos III | Facultad de Arquitectura</p>
+                    <p>Arq. José Mejía</p>
+                    <p style="margin-top: 1rem;"><strong>Equipo:</strong> [Tu Nombre] | [Compañero 2] | [Compañero 3]</p>
+                    <p>Abril 2026</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: EL PROBLEMA -->
+        <div class="slide">
+            <div class="slide-inner">
+                <h2>¿Por qué Sentry AI?</h2>
+                <p class="subtitle">La ciberseguridad ya no es un lujo, es una necesidad urgente</p>
+                <div class="grid-2" style="text-align: left;">
+                    <div class="card">
+                        <h4>🔴 EL CONTEXTO</h4>
+                        <ul>
+                            <li>70% de PYMES en Centroamérica han sufrido ciberataques</li>
+                            <li>Phishing = 45% de incidentes regionales</li>
+                            <li>Solo 3 de cada 10 empresas en GT tienen plan de seguridad</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h4>💥 EL IMPACTO</h4>
+                        <p class="quote">"Una PYME promedio pierde Q15,000 - Q50,000 por incidente, sin contar daño a reputación"</p>
+                        <div class="highlight" style="margin-top: 1rem;">85% de los ciberataques podrían prevenirse con herramientas adecuadas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: MISIÓN -->
+        <div class="slide">
+            <div class="slide-inner">
+                <h2>Nuestra Misión</h2>
+                <p class="subtitle">El propósito que nos mueve</p>
+                <div class="quote" style="font-size: 1.4rem; border-left: 4px solid var(--cyan); padding: 1.5rem; background: rgba(6,182,212,0.1); border-radius: 8px;">
+                    "Proteger el entorno digital de personas y empresas en Guatemala y Centroamérica mediante soluciones de ciberseguridad accesibles, inteligentes y proactivas, impulsadas por inteligencia artificial, para prevenir amenazas antes de que se conviertan en incidentes."
+                </div>
+                <div class="grid-3" style="margin-top: 2.5rem;">
+                    <div class="card" style="text-align: center;"><h3>🛡️</h3><p><strong>Protección</strong><br>Seguridad confiable</p></div>
+                    <div class="card" style="text-align: center;"><h3>🤖</h3><p><strong>Innovación</strong><br>IA aplicada y preventiva</p></div>
+                    <div class="card" style="text-align: center;"><h3>🌍</h3><p><strong>Accesibilidad</strong><br>Para todos los tamaños</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: VISIÓN -->
+        <div class="slide">
+            <div class="slide-inner">
+                <h2>Nuestra Visión</h2>
+                <p class="subtitle">El futuro que estamos construyendo</p>
+                <div class="quote" style="font-size: 1.3rem;">
+                    "Ser para 2030 la plataforma de referencia en ciberseguridad preventiva con IA en Centroamérica, reconocida por transformar la manera en que las PYMES y usuarios finales gestionan su seguridad digital, con impacto social positivo y ética tecnológica."
+                </div>
+                <div class="timeline">
+                    <div class="timeline-step"><h4>2024</h4><p>Prototipo funcional</p></div>
+                    <div class="timeline-step"><h4>2026</h4><p>Validación en mercado</p></div>
+                    <div class="timeline-step"><h4>2028</h4><p>Expansión regional</p></div>
+                    <div class="timeline-step" style="border-color: var(--green);"><h4>2030</h4><p>Líderes en Centroamérica 🎯</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: FODA INTRO -->
+        <div class="slide">
+            <div class="slide-inner">
+                <h2>Análisis FODA</h2>
+                <p class="subtitle">Diagnóstico estratégico de Sentry AI</p>
+                <p>Evaluamos nuestras Fortalezas y Debilidades internas, junto con las Oportunidades y Amenazas del entorno, para construir una estrategia sólida y realista.</p>
+                <div class="foda-grid">
+                    <div class="foda-box f"><h3 style="color: var(--green);">✅ FORTALEZAS</h3><ul><li>Algoritmo de IA propio</li><li>Enfoque preventivo</li><li>Equipo técnico especializado</li></ul></div>
+                    <div class="foda-box o"><h3 style="color: var(--cyan);">📈 OPORTUNIDADES</h3><ul><li>Demanda PYMES insatisfecha</li><li>Digitalización post-pandemia</li><li>Alianzas institucionales</li></ul></div>
+                    <div class="foda-box d"><h3 style="color: var(--amber);">⚠️ DEBILIDADES</h3><ul><li>Recursos financieros limitados</li><li>Equipo pequeño</li><li>Infraestructura básica</li></ul></div>
+                    <div class="foda-box a"><h3 style="color: var(--red);">🔥 AMENAZAS</h3><ul><li>Competencia global establecida</li><li>Cambios regulatorios</li><li>Sofisticación de ataques</li></ul></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: FORTALEZAS -->
+        <div class="slide">
+            <div class="slide-inner">
+                <h2>Fortalezas</h2>
+                <p class="subtitle">Lo que nos hace únicos y competitivos</p>
+                <div class="grid-2" style="text-align: left;">
+                    <div class="card"><h4>✅ Algoritmo de IA Propietario</h4><p>Modelo de ML entrenado para detectar phishing/malware en tiempo real. 94% de precisión en pruebas iniciales.</p></div>
+                    <div class="card"><h4>✅ Equipo Técnico Especializado</h4><p>Desarrolladores full-stack y expertos en ciberseguridad (Python, TensorFlow, ethical hacking).</p></div>
+                    <div class="card"><h4>✅ Enfoque Preventivo y Educativo</h4><p>No solo detectamos; educamos al usuario. Creamos cultura de prevención a largo plazo.</p></div>
+                    <div class="card"><h4>✅ Agilidad de Desarrollo</h4><p>Iteración rápida basada en feedback real. Adaptación constante al contexto guatemalteco.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: OPORTUNIDADES -->
+        <div class="slide">
+            <div class="slide-inner">
+                <h2>Oportunidades</h2>
+                <p class="subtitle">Tendencias del mercado que podemos aprovechar</p>
+                <div class="grid-2" style="text-align: left;">
+                    <div class="card"><h4>📈 Crecimiento de Ciberataques</h4><p>+35% en LATAM (2024). GT reporta +28% en phishing a PYMES. Demanda urgente de soluciones accesibles.</p></div>
+                    <div class="card"><h4>🤝 Alianzas Estratégicas</h4><p>Universidades, gobierno, bancos y cámaras de comercio buscan proteger su ecosistema digital.</p></div>
+                    <div class="card"><h4>💡 Demanda PYMES</h4><p>89% no pueden costear soluciones enterprise. Gap de mercado para herramientas de Q50-Q200/mes.</p></div>
+                    <div class="card"><h4>🌐 Teletrabajo & Conciencia</h4><p>45% de empresas en modelo híbrido. Usuarios más dispuestos a adoptar herramientas de protección.</p></div>
+                </div>
+                <div class="highlight" style="margin-top: 1.5rem;">Mercado potencial en GT: 50,000+ PYMES | Q150-300M/año</div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: DEBILIDADES -->
+        <div class="slide">
+            <div class="slide-inner">
+                <h2>Debilidades</h2>
+                <p class="subtitle">Áreas que debemos fortalecer</p>
+                <div class="grid-2" style="text-align: left;">
+                    <div class="card"><h4>⚠️ Recursos Financieros Limitados</h4><p><strong>Plan:</strong> Buscar incubadoras, aplicar a fondos de innovación, modelo freemium, créditos cloud (AWS/Google).</p></div>
+                    <div class="card"><h4>⚠️ Equipo Pequeño</h4><p><strong>Plan:</strong> Documentar código, programa de prácticas, automatización, comunidad open-source.</p></div>
+                    <div class="card"><h4>⚠️ Falta de Validación Masiva</h4><p><strong>Plan:</strong> Piloto con 50-100 PYMES en Q2 2026, analytics desde día 1, A/B testing.</p></div>
+                    <div class="card"><h4>⚠️ Infraestructura Básica</h4><p><strong>Plan:</strong> Migrar a AWS/Azure, arquitectura serverless, Cloudflare CDN, monitoreo 24/7.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: AMENAZAS -->
+        <div class="slide">
+            <div class="slide-inner">
+                <h2>Amenazas</h2>
+                <p class="subtitle">Factores externos que debemos mitigar</p>
+                <div class="grid-2" style="text-align: left;">
+                    <div class="card"><h4>🔥 Competencia Global</h4><p><strong>Mitigación:</strong> Precio 60% menor, soporte local, enfoque PYMES LATAM, alianzas TI regionales.</p></div>
+                    <div class="card"><h4>⚖️ Cambios Regulatorios</h4><p><strong>Mitigación:</strong> Privacy-by-design, consultoría legal, cifrado end-to-end, documentación compliance.</p></div>
+                    <div class="card"><h4>🎭 Desconfianza en IA</h4><p><strong>Mitigación:</strong> Transparencia, modo humano, casos de éxito, certificaciones SSL, educación continua.</p></div>
+                    <div class="card"><h4>🕵️ Ataques con IA</h4><p><strong>Mitigación:</strong> Actualización constante del modelo, threat intelligence, defensa en capas, parches automáticos.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: CANVAS -->
+        <div class="slide">
+            <div class="slide-inner">
+                <h2>Integración Estratégica</h2>
+                <p class="subtitle">Conectando el FODA con nuestro Modelo de Negocio</p>
+                <div class="canvas-flow">
+                    <div class="canvas-block">
+                        <h4>Propuesta de Valor</h4>
+                        <p>Ciberseguridad proactiva con IA a precio accesible (F + O)</p>
+                    </div>
+                    <div class="canvas-block">
+                        <h4>Segmentos & Canales</h4>
+                        <p>PYMES, profesionales, startups | Web, redes, alianzas comerciales</p>
+                    </div>
+                    <div class="canvas-block">
+                        <h4>Flujos de Ingreso</h4>
+                        <p>Freemium + Premium (Q99/mes) + Enterprise (Q299/mes)</p>
+                    </div>
+                    <div class="canvas-block">
+                        <h4>Estructura de Costos</h4>
+                        <p>~Q12,000/mes | Break-even: 120 clientes premium</p>
+                    </div>
+                </div>
+                <p style="margin-top: 1rem; color: var(--green);">✓ El FODA valida el enfoque en PYMES, precio accesible y modelo freemium.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: CONCLUSIONES -->
+        <div class="slide">
+            <div class="slide-inner">
+                <h2>Conclusiones y Próximos Pasos</h2>
+                <p class="subtitle">De la estrategia a la acción</p>
+                <div class="timeline">
+                    <div class="timeline-step"><h4>May-Jun</h4><p>Piloto 50 PYMES</p></div>
+                    <div class="timeline-step"><h4>Jul-Ago</h4><p>Lanzamiento v1.0</p></div>
+                    <div class="timeline-step"><h4>Sep-Dic</h4><p>Expansión + Inversión</p></div>
+                </div>
+                <div class="grid-3" style="text-align: left; margin-top: 1rem;">
+                    <div class="card"><h4>3 Meses</h4><p>100 usuarios activos<br>90% satisfacción</p></div>
+                    <div class="card"><h4>6 Meses</h4><p>500 usuarios<br>50 clientes pago</p></div>
+                    <div class="card"><h4>12 Meses</h4><p>Break-even operativo<br>Expansión regional</p></div>
+                </div>
+                <p style="margin-top: 2rem; font-size: 1.2rem; color: var(--cyan);">¿Listo para navegar seguro? 📧 contacto@sentryai.com | 🌐 www.sentryai.com</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: CRÉDITOS -->
+        <div class="slide">
+            <div class="slide-inner">
+                <h2>Créditos y Fuentes</h2>
+                <div class="grid-2" style="text-align: left;">
+                    <div class="card">
+                        <h4>👥 Equipo</h4>
+                        <p><strong>[Tu Nombre]</strong> - Líder / Full-Stack</p>
+                        <p><strong>[Compañero 2]</strong> - Ciberseguridad</p>
+                        <p><strong>[Compañero 3]</strong> - UX/UI & Marketing</p>
+                    </div>
+                    <div class="card">
+                        <h4>📚 Fuentes</h4>
+                        <ul>
+                            <li>Fortinet Threat Landscape Report (2024)</li>
+                            <li>INE Guatemala & Cámara de Industria</li>
+                            <li>BID Ciberseguridad PYMES LATAM</li>
+                        </ul>
+                    </div>
+                </div>
+                <p style="margin-top: 2rem; font-size: 1.5rem; color: var(--cyan); font-weight: 600;">🔐 "Protegiendo el futuro digital de Guatemala"</p>
+                <p style="color: #6B7280; margin-top: 1rem;">Sentry AI © 2026</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="prev" disabled>← Anterior</button>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <span class="slide-counter" id="counter">1 / 12</span>
+        <button id="next">Siguiente →</button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev');
+        const nextBtn = document.getElementById('next');
+        const progress = document.getElementById('progress');
+        const counter = document.getElementById('counter');
+        let current = 0;
+
+        function updateSlide(index) {
+            slides.forEach((s, i) => {
+                s.classList.remove('active');
+                if (i === index) s.classList.add('active');
+            });
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === slides.length - 1;
+            progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+            counter.textContent = `${index + 1} / ${slides.length}`;
+        }
+
+        nextBtn.addEventListener('click', () => { if (current < slides.length - 1) { current++; updateSlide(current); } });
+        prevBtn.addEventListener('click', () => { if (current > 0) { current--; updateSlide(current); } });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { if (current < slides.length - 1) { current++; updateSlide(current); e.preventDefault(); } }
+            if (e.key === 'ArrowLeft') { if (current > 0) { current--; updateSlide(current); e.preventDefault(); } }
+        });
+
+        updateSlide(0);
+    </script>
+</body>
+</html>
